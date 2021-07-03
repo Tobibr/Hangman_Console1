@@ -210,8 +210,6 @@ class MainClass
                 string playerName = Console.ReadLine();
 
                 // Save scores to a file
-                
-                //StreamWriter sw;
 
                 if (!File.Exists(pathScore))
                 {
@@ -235,20 +233,6 @@ class MainClass
                     sw.Close();
                 }
 
-                /*// save to the file                            
-                string tekst = $"{loop}   | {playerName} | {DateTime.Now} | {capitalWord}";
-                sw.WriteLine(tekst);
-                sw.Close();*/
-                //read from the file
-                /*StreamReader srs = File.OpenText(pathScore);
-                string s = "";
-                int i = 1; //score counter
-                while ((s = srs.ReadLine()) != null)
-                {
-                    Console.WriteLine("  " + i++ + s);
-                }
-                srs.Close();*/
-
             }
             else
             {
@@ -262,24 +246,9 @@ class MainClass
             List<string> linesTop = new List<string>(File.ReadAllLines(pathScore));
             linesTop.Sort();
 
-           /* if (!File.Exists(pathTopScore))
-            {
-                var newFile = File.Create(pathTopScore);
-            }
-            else
-            {
-                sw = new StreamWriter(pathTopScore, true);
-            }*/
-
             File.WriteAllLines(pathTopScore, linesTop);
             Console.WriteLine("\n  - - - - - - - - -    Top Ten Score board     - - - - - - - - -");
             Console.WriteLine("\ntrials |   name   |        data        | guessed capital ");
-
-            /* for (int i = 0; i < 10; i++)
-             {
-                 Console.WriteLine("  " + lineTop);
-             }*/
-       
 
             int i = 1;
             foreach (var lineTop in linesTop)
