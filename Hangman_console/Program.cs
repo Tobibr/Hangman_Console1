@@ -11,7 +11,7 @@ class MainClass
 
         do
         {
-            Console.WriteLine("Welcome to the Hangman!\n");
+            Console.WriteLine("Welcome to the Hangman Game!\n");
 
             string path = @"countries_and_capitals.txt";
 
@@ -22,7 +22,8 @@ class MainClass
             // read words from file
             if (!File.Exists(path))
             {
-                Console.WriteLine("The file with words do not exist!");
+                Console.WriteLine("The file with words do not exist! ");
+                Console.WriteLine("Copy 'countries_and_capitals.txt' to .. \\Hangman_console\\bin\\Debug\\net5.0\\");
                 break;
             }
             else
@@ -40,10 +41,10 @@ class MainClass
             string[] words = myText.Split(" | ");
             capitalWord = words[1].ToUpper();
             string countryWord = words[0];
-            
+
             int lives = 5;
             int counter = -1;
-            int loop = 0;
+            int trials = 0;
             string again;
             int wordLength = capitalWord.Length;
             char[] secretArray = capitalWord.ToCharArray();
@@ -56,8 +57,7 @@ class MainClass
             {
                 counter++;
 
-
-                printArray[counter] = '_';
+                printArray[counter] = '-';
             }
 
             Stopwatch stopWatch = new Stopwatch();
@@ -66,7 +66,7 @@ class MainClass
             {
                 stopWatch.Start();
                 counter = -1;
-                loop++;
+                trials++;
                 string printProgress = String.Concat(printArray);
                 bool letterFound = false;
                 int multiples = 0;
@@ -77,16 +77,7 @@ class MainClass
                     break;
                 }
 
-                if (lives > 1)
-                {
-                    Console.WriteLine("You have {0} lives!", lives);
-                }
-                else
-                {
-                    Console.WriteLine("You only have {0} life left!!", lives);
-                    Console.WriteLine("\n--------------- HINT! ---------------\n");
-                    Console.WriteLine($"What is the capital of {countryWord} ?\n");
-                }
+                Hint(countryWord, lives, guessedLetters, printProgress);
 
                 Console.WriteLine(GallowView(lives));
                 Console.WriteLine("current progress: " + printProgress);
@@ -97,7 +88,7 @@ class MainClass
 
                 do
                 {
-                    Console.WriteLine("Do you want guess letter or whole word? (L/W)");
+                    Console.WriteLine("Do you want guess a letter or a whole word? (L/W)");
                     ConsoleKeyInfo keyPress = Console.ReadKey();
                     again = keyPress.Key.ToString();
 
@@ -115,58 +106,7 @@ class MainClass
 
                 if (again.ToUpper() == "L")
                 {
-
-                    Console.Write("\nGuess a letter: ");
-                    string playerGuess = Console.ReadLine();
-
-                    //test to make sure a single letter
-                    bool guessTest = playerGuess.All(Char.IsLetter);
-
-                    while (guessTest == false || playerGuess.Length != 1)
-                    {
-                        Console.WriteLine("Please enter only a single letter!");
-                        Console.Write("Guess a letter: ");
-                        playerGuess = Console.ReadLine();
-                        guessTest = playerGuess.All(Char.IsLetter);
-                    }
-                    Console.Clear();
-                    playerGuess = playerGuess.ToUpper();
-                    char playerChar = Convert.ToChar(playerGuess);
-
-                    if (guessedLetters.Contains(playerChar) == false)
-                    {
-
-                        guessedLetters[numberStore] = playerChar;
-                        numberStore++;
-
-                        foreach (char letter in secretArray)
-                        {
-
-                            counter++;
-                            if (letter == playerChar)
-                            {
-                                printArray[counter] = playerChar;
-                                letterFound = true;
-                                multiples++;
-                            }
-
-                        }
-
-                        if (letterFound)
-                        {
-                            Console.WriteLine("Found {0} letter {1}!", multiples, playerChar);
-                        }
-                        else
-                        {
-                            Console.WriteLine("No letter {0}!", playerChar);
-                            lives--;
-                        }
-
-                    }
-                    else
-                    {
-                        Console.WriteLine("You already guessed {0}!!", playerChar);
-                    }
+                    GuessedLetter(ref lives, ref counter, secretArray, printArray, guessedLetters, ref numberStore, ref letterFound, ref multiples);
                 }
 
                 else
@@ -194,72 +134,28 @@ class MainClass
             }
 
             TimeSpan ts = stopWatch.Elapsed;
-
             int seconds = (ts.Minutes * 60) + ts.Seconds;
+
             string pathScore = @"score.txt";
             if (victory)
             {
                 Console.WriteLine("\n\nThe capital was: {0}", capitalWord);
                 Console.WriteLine("\n\n----- YOU WIN! -----\n");
-
-
-
-                Console.WriteLine($"You guessed the capital after {loop} letters. It took you {seconds} seconds\n");
-
+                Console.WriteLine($"You guessed the capital after {trials} letters. It took you {seconds} seconds\n");
                 Console.WriteLine("What is your name?");
                 string playerName = Console.ReadLine();
 
-                // Save scores to a file
-
-                if (!File.Exists(pathScore))
-                {
-                    sw = File.CreateText(pathScore);
-                }
-                else
-                {
-                    sw = new StreamWriter(pathScore, true);
-                }
-
-                if (loop < 10)
-                {
-                    string tekst = $"0{loop}   | {playerName} | {DateTime.Now} | {capitalWord}";
-                    sw.WriteLine(tekst);
-                    sw.Close();
-                }
-                else
-                {
-                    string tekst2 = $"{loop}   | {playerName} | {DateTime.Now} | {capitalWord}";
-                    sw.WriteLine(tekst2);
-                    sw.Close();
-                }
+                sw = SaveScoreToFile(capitalWord, trials, pathScore, playerName);
 
             }
             else
             {
                 Console.WriteLine("\n\nThe capital was: {0}", capitalWord);
-                Console.WriteLine("\n\nYOU LOSE!");
+                Console.WriteLine("\n\n   YOU LOSE!\n");
                 Console.WriteLine(GallowView(lives));
             }
 
-            string pathTopScore = @"TopScore.txt";
-
-            List<string> linesTop = new List<string>(File.ReadAllLines(pathScore));
-            linesTop.Sort();
-
-            File.WriteAllLines(pathTopScore, linesTop);
-            Console.WriteLine("\n  - - - - - - - - -    Top Ten Score     - - - - - - - - -");
-            Console.WriteLine("\n  trials |   name   |        data         | guessed capital ");
-
-            int i = 1;
-            foreach (var lineTop in linesTop)
-            {
-                Console.WriteLine($"{i}.  {lineTop}");
-                i++;
-            if (i > 10)
-            {
-            break;
-            }
-            }
+            TenTopScores(pathScore);
 
             do
             {
@@ -293,6 +189,126 @@ class MainClass
         } while (true);
     }
 
+    private static void Hint(string countryWord, int lives, char[] guessedLetters, string printProgress)
+    {
+        if (lives > 1)
+        {
+            Console.WriteLine($"You have {lives} lives!");
+        }
+        else
+        {
+            Console.WriteLine($"You only have {lives} life left!!");
+            Console.WriteLine("\n--------------- HINT! ---------------\n");
+            Console.WriteLine("What is the capital of {0} ?\n", countryWord);
+        }
+    }
+
+    private static void GuessedLetter(ref int lives, ref int counter, char[] secretArray, char[] printArray, char[] guessedLetters, ref int numberStore, ref bool letterFound, ref int multiples)
+    {
+        Console.Write("\nGuess a letter: ");
+        string playerGuess = Console.ReadLine();
+
+        //test to make sure a single letter
+        bool guessTest = playerGuess.All(Char.IsLetter);
+
+        while (guessTest == false || playerGuess.Length != 1)
+        {
+            Console.WriteLine("Please enter only a single letter!");
+            Console.Write("Guess a letter: ");
+            playerGuess = Console.ReadLine();
+            guessTest = playerGuess.All(Char.IsLetter);
+        }
+        Console.Clear();
+        playerGuess = playerGuess.ToUpper();
+        char playerChar = Convert.ToChar(playerGuess);
+
+        if (guessedLetters.Contains(playerChar) == false)
+        {
+
+            guessedLetters[numberStore] = playerChar;
+            numberStore++;
+
+            foreach (char letter in secretArray)
+            {
+
+                counter++;
+                if (letter == playerChar)
+                {
+                    printArray[counter] = playerChar;
+                    letterFound = true;
+                    multiples++;
+                }
+
+            }
+
+            if (letterFound)
+            {
+                Console.WriteLine("Found {0} letter {1}!", multiples, playerChar);
+            }
+            else
+            {
+                Console.WriteLine("No letter {0}!", playerChar);
+                lives--;
+            }
+
+        }
+        else
+        {
+            Console.WriteLine("You already guessed {0}!!", playerChar);
+        }
+    }
+
+    private static StreamWriter SaveScoreToFile(string capitalWord, int trials, string pathScore, string playerName)
+    {
+        StreamWriter sw;
+        // Save scores to a file
+
+        if (!File.Exists(pathScore))
+        {
+            sw = File.CreateText(pathScore);
+        }
+        else
+        {
+            sw = new StreamWriter(pathScore, true);
+        }
+
+        if (trials < 10)
+        {
+            string tekst = $"0{trials}   | {playerName} | {DateTime.Now} | {capitalWord}";
+            sw.WriteLine(tekst);
+        }
+        else
+        {
+            string tekst2 = $"{trials}   | {playerName} | {DateTime.Now} | {capitalWord}";   
+            sw.WriteLine(tekst2);
+        } 
+        sw.Close();
+        return sw;
+    }
+
+    private static void TenTopScores(string pathScore)
+    {
+        string pathTopScore = @"TopScore.txt";
+
+        List<string> linesTop = new List<string>(File.ReadAllLines(pathScore));
+        linesTop.Sort();
+
+        File.WriteAllLines(pathTopScore, linesTop);
+        Console.WriteLine("\n  - - - - - - - - -    Top Ten Score     - - - - - - - - -");
+        Console.WriteLine("\n  trials |   name  |        data         | guessed capital ");
+
+        int i = 1;
+        foreach (var lineTop in linesTop)
+        {
+            Console.WriteLine($"{i}.  {lineTop}");
+            i++;
+            if (i > 10)
+            {
+                break;
+            }
+        }
+    }
+
     private static string GallowView(int livesLeft)
     {
         //simple function to print out the hangman
@@ -301,56 +317,62 @@ class MainClass
 
         if (livesLeft == 5)
         {
-            drawHangman += "||\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
         }
 
         if (livesLeft == 4)
         {
-            drawHangman += "========\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
+            drawHangman += "   ========\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
         }
 
         if (livesLeft == 3)
         {
-            drawHangman += "========\n";
-            drawHangman += "||     |\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
+            drawHangman += "   ========\n";
+            drawHangman += "   ||     |\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
         }
 
         if (livesLeft == 2)
         {
-            drawHangman += "========\n";
-            drawHangman += "||     |\n";
-            drawHangman += "||     O\n";
-            drawHangman += "||\n";
-            drawHangman += "||\n";
+            drawHangman += "   ========\n";
+            drawHangman += "   ||     |\n";
+            drawHangman += "   ||     O\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
         }
 
         if (livesLeft == 1)
         {
-            drawHangman += "========\n";
-            drawHangman += "||     |\n";
-            drawHangman += "||     O\n";
-            drawHangman += "||    /|\\ \n";
-            drawHangman += "||\n";
+            drawHangman += "   ========\n";
+            drawHangman += "   ||     |\n";
+            drawHangman += "   ||     O\n";
+            drawHangman += "   ||    /|\\ \n";
+            drawHangman += "   ||\n";
+            drawHangman += "   ||\n";
         }
 
         if (livesLeft == 0)
         {
-            drawHangman += "========\n";
-            drawHangman += "||     |\n";
-            drawHangman += "||     O\n";
-            drawHangman += "||    /|\\ \n";
-            drawHangman += "||    / \\ \n";
+            drawHangman += "   ========\n";
+            drawHangman += "   ||     |\n";
+            drawHangman += "   ||     O\n";
+            drawHangman += "   ||    /|\\ \n";
+            drawHangman += "   ||    / \\ \n";
+            drawHangman += "   ||\n";
         }
 
         return drawHangman;
