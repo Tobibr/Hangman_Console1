@@ -2,19 +2,18 @@
 using System.Linq;
 using System.IO;
 using System.Diagnostics;
-using System.Reflection;
+using System.Collections.Generic;
 
 class MainClass
 {
     public static void Main(string[] args)
     {
+
         do
         {
             Console.WriteLine("Welcome to the Hangman!\n");
 
             string path = @"countries_and_capitals.txt";
-            //string path = @"Hangman_console\Files\countries_and_capitals.txt";
-            //string path = AppDomain.CurrentDomain.BaseDirectory + "\\Files\\countries_and_capitals.txt";
 
             StreamWriter sw;
             StreamReader sr;
@@ -41,8 +40,7 @@ class MainClass
             string[] words = myText.Split(" | ");
             capitalWord = words[1].ToUpper();
             string countryWord = words[0];
-            //Console.Clear();
-
+            
             int lives = 5;
             int counter = -1;
             int loop = 0;
@@ -198,7 +196,7 @@ class MainClass
             TimeSpan ts = stopWatch.Elapsed;
 
             int seconds = (ts.Minutes * 60) + ts.Seconds;
-
+            string pathScore = @"score.txt";
             if (victory)
             {
                 Console.WriteLine("\n\nThe capital was: {0}", capitalWord);
@@ -212,7 +210,7 @@ class MainClass
                 string playerName = Console.ReadLine();
 
                 // Save scores to a file
-                string pathScore = @"score.txt";
+                
                 //StreamWriter sw;
 
                 if (!File.Exists(pathScore))
@@ -223,22 +221,33 @@ class MainClass
                 {
                     sw = new StreamWriter(pathScore, true);
                 }
-                // save to the file                            
-                string tekst = $"{playerName} | {DateTime.Now} | {loop} | {capitalWord}";
+
+                if (loop < 10)
+                {
+                    string tekst = $"0{loop}   | {playerName} | {DateTime.Now} | {capitalWord}";
+                    sw.WriteLine(tekst);
+                    sw.Close();
+                }
+                else
+                {
+                    string tekst2 = $"{loop}   | {playerName} | {DateTime.Now} | {capitalWord}";
+                    sw.WriteLine(tekst2);
+                    sw.Close();
+                }
+
+                /*// save to the file                            
+                string tekst = $"{loop}   | {playerName} | {DateTime.Now} | {capitalWord}";
                 sw.WriteLine(tekst);
-                sw.Close();
+                sw.Close();*/
                 //read from the file
-                StreamReader srs = File.OpenText(pathScore);
+                /*StreamReader srs = File.OpenText(pathScore);
                 string s = "";
                 int i = 1; //score counter
-                Console.WriteLine("\n  - - - - - - - - -     Score board     - - - - - - - - -");
-                Console.WriteLine("\n    name |        data        | trials | guessed capital ");
                 while ((s = srs.ReadLine()) != null)
                 {
-                    Console.WriteLine(i++ + ". " + s);
+                    Console.WriteLine("  " + i++ + s);
                 }
-                srs.Close();
-
+                srs.Close();*/
 
             }
             else
@@ -246,6 +255,41 @@ class MainClass
                 Console.WriteLine("\n\nThe capital was: {0}", capitalWord);
                 Console.WriteLine("\n\nYOU LOSE!");
                 Console.WriteLine(GallowView(lives));
+            }
+
+            string pathTopScore = @"TopScore.txt";
+
+            List<string> linesTop = new List<string>(File.ReadAllLines(pathScore));
+            linesTop.Sort();
+
+           /* if (!File.Exists(pathTopScore))
+            {
+                var newFile = File.Create(pathTopScore);
+            }
+            else
+            {
+                sw = new StreamWriter(pathTopScore, true);
+            }*/
+
+            File.WriteAllLines(pathTopScore, linesTop);
+            Console.WriteLine("\n  - - - - - - - - -    Top Ten Score board     - - - - - - - - -");
+            Console.WriteLine("\ntrials |   name   |        data        | guessed capital ");
+
+            /* for (int i = 0; i < 10; i++)
+             {
+                 Console.WriteLine("  " + lineTop);
+             }*/
+       
+
+            int i = 1;
+            foreach (var lineTop in linesTop)
+            {
+                Console.WriteLine($"{i}.  {lineTop}");
+                i++;
+            if (i > 10)
+            {
+            break;
+            }
             }
 
             do
