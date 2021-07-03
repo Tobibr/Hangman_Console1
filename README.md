@@ -1,4 +1,6 @@
 # Hangman_Console1
+Everything works, the optional points too.
+I understand perfectly well that the style is not the best but it was my first real code.
 
 I have always wanted to create an application. Unfortunately, I was not lucky with programming teachers - even in a special IT technical college. So, my career and interests have moved towards UI/UX design.
 Now I want to expand my abilities for a back-end programming. Which will give me a great ability to create applications from idea to publication.
