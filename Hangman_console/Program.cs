@@ -247,8 +247,8 @@ class MainClass
             linesTop.Sort();
 
             File.WriteAllLines(pathTopScore, linesTop);
-            Console.WriteLine("\n  - - - - - - - - -    Top Ten Score board     - - - - - - - - -");
-            Console.WriteLine("\ntrials |   name   |        data        | guessed capital ");
+            Console.WriteLine("\n  - - - - - - - - -    Top Ten Score     - - - - - - - - -");
+            Console.WriteLine("\n  trials |   name   |        data         | guessed capital ");
 
             int i = 1;
             foreach (var lineTop in linesTop)
@@ -356,8 +356,5 @@ class MainClass
         return drawHangman;
 
     }
-
-
-
 
 }
